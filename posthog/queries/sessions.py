@@ -57,17 +57,21 @@ class BaseSessions(BaseQuery):
         )
 
         sessions_sql, sessions_sql_params = sessions.query.sql_with_params()
-        all_sessions = "\
-            SELECT *,\
-                SUM(new_session) OVER (ORDER BY distinct_id, timestamp) AS global_session_id,\
-                SUM(new_session) OVER (PARTITION BY distinct_id ORDER BY timestamp) AS user_session_id\
-                FROM (SELECT id, team_id, distinct_id, event, elements_hash, timestamp, properties, CASE WHEN EXTRACT('EPOCH' FROM (timestamp - previous_timestamp)) >= (60 * 30)\
-                    OR previous_timestamp IS NULL \
-                    THEN 1 ELSE 0 END AS new_session \
-                    FROM ({}) AS inner_sessions\
-                ) AS outer_sessions".format(
-            sessions_sql
-        )
+        all_sessions = f"""
+            SELECT *,
+                SUM(new_session) OVER (ORDER BY distinct_id, timestamp) AS global_session_id,
+                SUM(new_session) OVER (PARTITION BY distinct_id ORDER BY timestamp) AS user_session_id
+            FROM (
+                SELECT
+                    id, team_id, distinct_id, event, elements_hash, timestamp, properties,
+                    CASE
+                        WHEN EXTRACT('EPOCH' FROM (timestamp - previous_timestamp)) >= (60 * 30) OR previous_timestamp IS NULL
+                        THEN 1
+                        ELSE 0
+                    END AS new_session
+                FROM ({sessions_sql}) AS inner_sessions
+            ) AS outer_sessions
+        """
 
         return all_sessions, sessions_sql_params
 
