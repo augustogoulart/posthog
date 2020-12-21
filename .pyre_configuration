@@ -1,0 +1,8 @@
+{
+  "binary": "/Users/twixes/Developer/posthog/venv/bin/pyre.bin",
+  "source_directories": [
+    "."
+  ],
+  "taint_models_path": "/Users/twixes/Developer/posthog/venv/lib",
+  "typeshed": "/Users/twixes/Developer/posthog/venv/lib/pyre_check/typeshed"
+}
